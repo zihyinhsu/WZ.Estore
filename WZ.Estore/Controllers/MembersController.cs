@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -62,6 +63,40 @@ namespace WZ.Estore.Controllers
 				};
 
 				db.Members.Add(member);
+				db.SaveChanges();
+			}
+		}
+
+		/// <summary>
+		/// 啟用帳號
+		/// </summary>
+		/// <param name="memberId"></param>
+		/// <param name="confirmCode"></param>
+		/// <returns></returns>
+		public ActionResult ActiveRegister(int memberId, string confirmCode)
+		{
+			try
+			{
+				ProcessActiveRegister(memberId, confirmCode);
+
+				return View("ActiveRegister");
+			}
+			catch (Exception ex)
+			{
+				ModelState.AddModelError("", ex.Message);
+				return View();
+			}
+		}
+
+		private void ProcessActiveRegister(int memberId, string confirmCode) {
+			using (var db = new AppDbContext()) {
+				// 如果用 memberId,confirmCode 找不到就不做任何事
+				var member = db.Members.FirstOrDefault(m => m.Id == memberId && m.ConfirmCode == confirmCode && m.IsConfirmed == false);
+				if (member == null) return;
+
+				// updateIsConfirm and confirm code
+				member.IsConfirmed = true;
+				member.ConfirmCode = null;
 				db.SaveChanges();
 			}
 		}
