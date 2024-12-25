@@ -34,5 +34,25 @@
 - Add EditProfile viewPage (example:Edit)
 - Create Partial View_MemberCenterNavbar.cshtml
 
+### Modify Password
+- Modify Members/Index and add ChangePassword link
+- Add Models/ViewModels/ChangePasswordVM.cs (include account, email)
+- Add /Members/ChangePassword action [Authorize]
+- Add ChangePassword viewPage (example:Create)
+
+
+### Forget Password/Reset Password
+- Add Models/ViewModels/ForgetPasswordVM.cs
+- Add /Members/ForgetPassword action
+- Add ForgetPassword viewPage (example:Create)
+  Check if account & email are valid, confirmCode= guid, send email
+- return confirm forget password viewPage
+
+- Add  Models/ViewModels/ResetPasswordVM.cs (include password, confirmPassword)
+- Add /Members/ResetPassword action
+- Add ResetPassword viewPage (example:Create)
+  Check if memberId & ConfirmCode & confirmCode are correct, update password, confirmCode = null
+- Modify login viewPage, add forget password link
+
 ### MailerSend
 - Integrate MailerSend after successful registration

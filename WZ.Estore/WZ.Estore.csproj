@@ -156,6 +156,7 @@
     <Compile Include="Models\EFModels\Product.cs" />
     <Compile Include="Models\Infra\DAHelper.cs" />
     <Compile Include="Models\Infra\HashUtility.cs" />
+    <Compile Include="Models\ViewModels\ChangePasswordVM.cs" />
     <Compile Include="Models\ViewModels\LoginVM.cs" />
     <Compile Include="Models\ViewModels\ProfileVM.cs" />
     <Compile Include="Models\ViewModels\RegisterVM.cs" />
@@ -219,6 +220,7 @@
     <Content Include="Views\Members\Index.cshtml" />
     <Content Include="Views\Members\EditProfile.cshtml" />
     <Content Include="Views\Members\_MemberCenterNavbar.cshtml" />
+    <Content Include="Views\Members\ChangePassword.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

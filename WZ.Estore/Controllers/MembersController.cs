@@ -226,5 +226,31 @@ namespace WZ.Estore.Controllers
 			}
 
 		}
+
+		public ActionResult ChangePassword()
+		{
+			return View();
+		}
+
+		[Authorize]
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public ActionResult ChangePassword(ChangePasswordVM model)
+		{
+			string account = User.Identity.Name;
+			using (var db = new AppDbContext()) { 
+				var memberInDb = db.Members.First(m => m.Account == account);
+				if (!HashUtility.VerifySHA256(model.OiginalPassword, memberInDb.EncryptedPassword)){ 
+					ModelState.AddModelError("OiginalPassword", "原密碼錯誤");
+					return View(model);
+				}
+
+				memberInDb.EncryptedPassword = HashUtility.ToSHA256(model.Password, HashUtility.GetSalt());
+				db.SaveChanges();
+				TempData["Message"] = "密碼已變更";
+				return RedirectToAction("Index");
+			}
+		}
+
 	}
 }
