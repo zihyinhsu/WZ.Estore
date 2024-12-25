@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Security;
 using WZ.Estore.Models.EFModels;
 using WZ.Estore.Models.Infra;
 using WZ.Estore.Models.ViewModels;
@@ -13,6 +14,12 @@ namespace WZ.Estore.Controllers
 	public class MembersController : Controller
 	{
 		// GET: Members
+		[Authorize]
+		public ActionResult Index()
+		{
+			return View();
+		}
+
 		public ActionResult Register()
 		{
 			return View();
@@ -75,6 +82,7 @@ namespace WZ.Estore.Controllers
 		/// <returns></returns>
 		public ActionResult ActiveRegister(int memberId, string confirmCode)
 		{
+
 			try
 			{
 				ProcessActiveRegister(memberId, confirmCode);
@@ -88,8 +96,10 @@ namespace WZ.Estore.Controllers
 			}
 		}
 
-		private void ProcessActiveRegister(int memberId, string confirmCode) {
-			using (var db = new AppDbContext()) {
+		private void ProcessActiveRegister(int memberId, string confirmCode)
+		{
+			using (var db = new AppDbContext())
+			{
 				// 如果用 memberId,confirmCode 找不到就不做任何事
 				var member = db.Members.FirstOrDefault(m => m.Id == memberId && m.ConfirmCode == confirmCode && m.IsConfirmed == false);
 				if (member == null) return;
@@ -99,6 +109,82 @@ namespace WZ.Estore.Controllers
 				member.ConfirmCode = null;
 				db.SaveChanges();
 			}
+		}
+
+		// GET: Members/Login
+		public ActionResult Login()
+		{
+			return View();
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public ActionResult Login(LoginVM model)
+		{
+			if (!ModelState.IsValid) return View(model);
+			try
+			{
+				ValidateLogin(model.Account, model.Password); // 若失敗會拋出例外
+
+				(string returnUrl, HttpCookie cookie) = ProccessLogin(model.Account);
+
+				// 登入成功，設定 cookie
+				Response.Cookies.Add(cookie);
+
+				// 導向 returnUrl
+				return Redirect(returnUrl);
+
+			}
+			catch (Exception ex)
+			{
+				ModelState.AddModelError("", ex.Message);
+				return View();
+			};
+		}
+
+		private (string returnUrl, HttpCookie cookie) ProccessLogin(string account)
+		{
+			var roles = string.Empty; // 本範例沒有用到角色，存入空白
+
+			// 建立一張認證票
+			var ticket = new FormsAuthenticationTicket(
+				1,// 版本別
+				account,
+				DateTime.Now,// 發行日
+				DateTime.Now.AddMinutes(30), // 到期日
+				false, // 是否續存
+				roles, // userdata
+				"/" // cookie 位置
+				);
+
+			// 將它加密
+			var value = FormsAuthentication.Encrypt(ticket);
+
+			// 存入cookie
+			var cookie = new HttpCookie(FormsAuthentication.FormsCookieName, value);
+
+			// 取得 return url
+			var url = FormsAuthentication.GetRedirectUrl(account, true);
+			return (url, cookie);
+		}
+
+		private void ValidateLogin(string account, string password)
+		{
+			// 若還沒開通就拋出例外
+			//若密碼錯誤就拋出例外
+			using (var db = new AppDbContext())
+			{
+				var member = db.Members.FirstOrDefault(m => m.Account == account);
+				if (member == null) throw new Exception("帳號或密碼錯誤");
+				if (!HashUtility.VerifySHA256(password, member.EncryptedPassword)) throw new Exception("帳號或密碼錯誤");
+				if (member.IsConfirmed == false) throw new Exception("帳號尚未開通");
+			}
+		}
+
+		public ActionResult Logout()
+		{
+			FormsAuthentication.SignOut();
+			return RedirectToAction("Login", "Members");
 		}
 	}
 }

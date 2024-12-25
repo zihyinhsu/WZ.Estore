@@ -28,11 +28,17 @@ namespace WZ.Estore.Models.Infra
 				}
 				return sb.ToString();
 			}
-		}
+		}	
 
 		public static string GetSalt()
 		{
 			return System.Configuration.ConfigurationManager.AppSettings["Salt"];
+		}
+
+		internal static bool VerifySHA256(string password, string encryptedPassword)
+		{
+			var hashPwd = ToSHA256(password, GetSalt());
+			return hashPwd == encryptedPassword;
 		}
 	}
 }
