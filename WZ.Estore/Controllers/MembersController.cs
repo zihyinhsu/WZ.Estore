@@ -186,5 +186,45 @@ namespace WZ.Estore.Controllers
 			FormsAuthentication.SignOut();
 			return RedirectToAction("Login", "Members");
 		}
+
+		public ActionResult EditProfile()
+		{
+			// 取得個人基本資料
+			string account = User.Identity.Name;
+			using (var db = new AppDbContext())
+			{
+				var member = db.Members.First(m => m.Account == account);
+				// 轉型為 ProfileVM
+				ProfileVM model = new ProfileVM
+				{
+					Account = member.Account,
+					Email = member.Email,
+					Name = member.Name,
+					Mobile = member.Mobile
+				};
+				return View(model);
+			}
+		}
+
+		[HttpPost]
+		[Authorize]
+		[ValidateAntiForgeryToken]
+		public ActionResult EditProfile(ProfileVM model)
+		{
+			string account = User.Identity.Name;
+
+			using (var db = new AppDbContext()) {
+				var memberInDb = db.Members.First(m => m.Account == account);
+				memberInDb.Name = model.Name;
+				memberInDb.Mobile = model.Mobile;
+				memberInDb.Email = model.Email;
+
+				db.SaveChanges();
+
+				TempData["Message"] = "個人資料已更新";
+				return RedirectToAction("Index");
+			}
+
+		}
 	}
 }

@@ -27,6 +27,12 @@
 - Modify MembersController, add Logout action
 - Modify Home/About action and make it only accessable by login user
 
+### Modify Profile
+- Modify Members/Index and add EditProfile link
+- Add Models/ViewModels/ProfileVM.cs
+- Add /Members/EditProfile action
+- Add EditProfile viewPage (example:Edit)
+- Create Partial View_MemberCenterNavbar.cshtml
 
 ### MailerSend
 - Integrate MailerSend after successful registration
