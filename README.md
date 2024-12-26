@@ -36,13 +36,13 @@
 
 ### Modify Password
 - Modify Members/Index and add ChangePassword link
-- Add Models/ViewModels/ChangePasswordVM.cs (include account, email)
+- Add Models/ViewModels/ChangePasswordVM.cs 
 - Add /Members/ChangePassword action [Authorize]
 - Add ChangePassword viewPage (example:Create)
 
 
 ### Forget Password/Reset Password
-- Add Models/ViewModels/ForgetPasswordVM.cs
+- Add Models/ViewModels/ForgetPasswordVM.cs (include account, email)
 - Add /Members/ForgetPassword action
 - Add ForgetPassword viewPage (example:Create)
   Check if account & email are valid, confirmCode= guid, send email
@@ -50,6 +50,9 @@
 
 - Add  Models/ViewModels/ResetPasswordVM.cs (include password, confirmPassword)
 - Add /Members/ResetPassword action
+	```
+	https://localhost:44313/Members/ResetPassword?memberId={memberId}&confirmCode={confirmCode}
+	```
 - Add ResetPassword viewPage (example:Create)
   Check if memberId & ConfirmCode & confirmCode are correct, update password, confirmCode = null
 - Modify login viewPage, add forget password link

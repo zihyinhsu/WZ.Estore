@@ -7,6 +7,7 @@ using System.Web.Mvc;
 using System.Web.Security;
 using WZ.Estore.Models.EFModels;
 using WZ.Estore.Models.Infra;
+using WZ.Estore.Models.Services;
 using WZ.Estore.Models.ViewModels;
 
 namespace WZ.Estore.Controllers
@@ -49,29 +50,16 @@ namespace WZ.Estore.Controllers
 		/// <param name="model"></param>
 		private void ProcessRegister(RegisterVM model)
 		{
-			using (var db = new AppDbContext())
+			RegisterDto dto = new RegisterDto
 			{
-				// 判斷帳號是否已存在
-				if (db.Members.Any(m => m.Account == model.Account))
-				{
-					throw new Exception("帳號已存在");
-				}
-				// 密碼加密
-				var hashedPassword = HashUtility.ToSHA256(model.Password, HashUtility.GetSalt());
-				var member = new Member
-				{
-					Account = model.Account,
-					EncryptedPassword = hashedPassword,
-					Email = model.Email,
-					Name = model.Name,
-					Mobile = model.Mobile,
-					IsConfirmed = false,
-					ConfirmCode = Guid.NewGuid().ToString()
-				};
+				Name = model.Name,
+				Account = model.Account,
+				Email = model.Email,
+				Mobile = model.Mobile,
+				Password = model.Password
+			};
 
-				db.Members.Add(member);
-				db.SaveChanges();
-			}
+			new MemberService().Register(dto);
 		}
 
 		/// <summary>
@@ -132,7 +120,7 @@ namespace WZ.Estore.Controllers
 				Response.Cookies.Add(cookie);
 
 				// 導向 returnUrl
-				return Redirect(returnUrl);
+				return Redirect("Index");
 
 			}
 			catch (Exception ex)
@@ -252,5 +240,65 @@ namespace WZ.Estore.Controllers
 			}
 		}
 
+		public ActionResult ForgetPassword()
+		{
+			return View();
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public ActionResult ForgetPassword(ForgetPasswordVM model)
+		{
+			string account = User.Identity.Name;
+			using (var db = new AppDbContext())
+			{
+				// 判斷帳號是否存在
+				var member = db.Members.FirstOrDefault(m => m.Account == model.Account && m.Email == model.Email);
+				if (member == null) { 
+					ModelState.AddModelError("", "帳號或 Email 錯誤");
+					return View(model);
+				}
+
+				// 更新 confirmcode
+				member.ConfirmCode = Guid.NewGuid().ToString();
+				db.SaveChanges();
+
+				// 寄送 email
+				// Members/ResetPassword?memberId={memberId}&confirmCode={confirmCode}
+				string url = Url.Action("ResetPassword", "Members", new { memberId = member.Id, confirmCode = member.ConfirmCode }, Request.Url.Scheme);
+				return View("ConfirmForgetPassword");
+			}
+		}
+
+		public ActionResult ResetPassword(int memberId ,string confirmCode)
+		{
+			using (var db = new AppDbContext())
+			{
+				var member = db.Members.FirstOrDefault(m => m.Id == memberId && m.ConfirmCode == confirmCode);
+				if (member == null) return View("ErrorResetPassword");
+				return View();
+			}
+
+		}
+
+		[Authorize]
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public ActionResult ResetPassword(ResetPasswordVM model, int memberId, string confirmCode)
+		{
+			using (var db = new AppDbContext())
+			{
+				var member = db.Members.FirstOrDefault(m => m.Id == memberId && m.ConfirmCode == confirmCode);
+
+				if (member == null) return View("ErrorResetPassword");
+				member.EncryptedPassword = HashUtility.ToSHA256(model.Password, HashUtility.GetSalt());
+				member.ConfirmCode = null;
+				db.SaveChanges();
+
+				TempData["Message"] = "密碼已變更";
+				return RedirectToAction("Index", "Home");
+
+			}
+		}
 	}
 }
