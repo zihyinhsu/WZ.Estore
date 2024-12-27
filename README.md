@@ -57,5 +57,18 @@
   Check if memberId & ConfirmCode & confirmCode are correct, update password, confirmCode = null
 - Modify login viewPage, add forget password link
 
+### Create Product List
+- Add Models/EFModels/ProductIndexVM.cs
+- Add /ProductsController and /Index action
+- add Index viewPage (example:List)
+
+### Cart
+- add Cart Controller, add AddItem action
+- add Info action
+- add UpdateItem action
+
+### Order
+
+
 ### MailerSend
 - Integrate MailerSend after successful registration

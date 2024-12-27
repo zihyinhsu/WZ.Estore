@@ -1,0 +1,115 @@
+﻿@model WZ.Estore.Models.ViewModels.CartVm
+
+@{
+    ViewBag.Title = "Info";
+    var cartItem = Model.CartItems.FirstOrDefault();
+}
+
+<h2>購物車</h2>
+
+<table class="table">
+    <tr>
+
+        <th>
+            @Html.DisplayNameFor(model => cartItem.Product.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => cartItem.Qty)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => cartItem.SubTotal)
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model?.CartItems)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Product.Name)
+            </td>
+
+            <td>
+                @Html.DisplayFor(modelItem => item.Product.Price)
+            </td>
+
+            <td>
+                @Html.DisplayFor(modelItem => item.Qty)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SubTotal)
+            </td>
+            <td>
+                <button class="btn btn-sm btn-danger delQty" data-id="@item.Product.Id" data-qty="@item.Qty">減一</button>
+                <button class="btn btn-sm btn-primary addQty" data-id="@item.Product.Id" data-qty="@item.Qty">加一</button>
+            </td>
+        </tr>
+    }
+
+</table>
+
+<div class="total">
+    <h4>Total : @Model.Total.ToString("#,#")</h4>
+    @if (Model.AllowCheckout)
+    {
+        <div class="chceckout">
+            <a href="/Cart/Checkout" class="btn btn-primary">結帳</a>
+        </div>
+    }
+</div>
+
+@*@section scripts{
+        <script>
+            $(function () {
+                $(".delQty").click(function () {
+                    var id = $(this).data("id");
+                    var qty = $(this).data("qty");
+                    $.post("/Cart/RemoveFromCart", { id: id, qty: qty }, function (data) {
+                        location.reload();
+                    });
+                });
+                $(".AddQty").click(function () {
+                    var id = $(this).data("id");
+                    var qty = $(this).data("qty");
+                    $.post("/Cart/AddToCart", { id: id, qty: qty }, function (data) {
+                        location.reload();
+                    });
+                });
+            });
+        </script>
+    }
+    *@
+@section scripts{
+    <script>
+        $(".addQty").each(function () {
+            $(this).on("click", function () {
+                console.log("加1 btn被按了");
+
+                var self = $(this);
+
+                var productId = self.attr("data-id");
+                var newQty = parseInt(self.attr("data-qty")) + 1;
+
+                //ajax 送出 request
+                $.get("/Cart/UpdateItem?productId=" + productId + "&newQty=" + newQty, function (result) {
+                    location.reload();
+                });
+            });
+        });
+        $(".delQty").each(function () {
+            $(this).on("click", function () {
+                console.log("減1 btn被按了");
+
+                var self = $(this);
+
+                var productId = self.attr("data-id");
+                var newQty = parseInt(self.attr("data-qty")) - 1;
+
+                //ajax 送出 request
+                $.get("/Cart/UpdateItem?productId=" + productId + "&newQty=" + newQty, function (result) {
+                    location.reload();
+                });
+            });
+        });
+    </script>
+}

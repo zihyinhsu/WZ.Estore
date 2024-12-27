@@ -141,8 +141,10 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\CartController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MembersController.cs" />
+    <Compile Include="Controllers\ProductsController.cs" />
     <Compile Include="Models\DTOs\RegisterDto.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -159,9 +161,11 @@
     <Compile Include="Models\Infra\HashUtility.cs" />
     <Compile Include="Models\Repository\MemberEFRepository.cs" />
     <Compile Include="Models\Services\MemberService.cs" />
+    <Compile Include="Models\ViewModels\CartVm.cs" />
     <Compile Include="Models\ViewModels\ChangePasswordVM.cs" />
     <Compile Include="Models\ViewModels\ForgetPasswordVM.cs" />
     <Compile Include="Models\ViewModels\LoginVM.cs" />
+    <Compile Include="Models\ViewModels\ProductIndexVM.cs" />
     <Compile Include="Models\ViewModels\ProfileVM.cs" />
     <Compile Include="Models\ViewModels\RegisterVM.cs" />
     <Compile Include="Models\ViewModels\ResetPasswordVM.cs" />
@@ -230,6 +234,9 @@
     <Content Include="Views\Members\ResetPassword.cshtml" />
     <Content Include="Views\Members\ConfirmForgetPassword.cshtml" />
     <Content Include="Views\Members\ErrorResetPassword.cshtml" />
+    <Content Include="Views\Products\Index.cshtml" />
+    <Content Include="Views\Products\Edit.cshtml" />
+    <Content Include="Views\Cart\Info.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
