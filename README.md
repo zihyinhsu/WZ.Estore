@@ -68,7 +68,10 @@
 - add UpdateItem action
 
 ### Order
-
+- Add /Models/ViewModels/CHeckoutVM.cs
+- Add checkout action in CartController
+- Add checkout view page (example:create) model is CheckoutVM
+- Add ConfirmCheckout view page (example:empty) and show success message
 
 ### MailerSend
 - Integrate MailerSend after successful registration

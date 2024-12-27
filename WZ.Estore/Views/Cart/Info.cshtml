@@ -58,27 +58,6 @@
     }
 </div>
 
-@*@section scripts{
-        <script>
-            $(function () {
-                $(".delQty").click(function () {
-                    var id = $(this).data("id");
-                    var qty = $(this).data("qty");
-                    $.post("/Cart/RemoveFromCart", { id: id, qty: qty }, function (data) {
-                        location.reload();
-                    });
-                });
-                $(".AddQty").click(function () {
-                    var id = $(this).data("id");
-                    var qty = $(this).data("qty");
-                    $.post("/Cart/AddToCart", { id: id, qty: qty }, function (data) {
-                        location.reload();
-                    });
-                });
-            });
-        </script>
-    }
-    *@
 @section scripts{
     <script>
         $(".addQty").each(function () {

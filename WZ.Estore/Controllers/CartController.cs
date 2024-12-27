@@ -123,6 +123,7 @@ namespace WZ.Estore.Controllers
 			return new EmptyResult();
 		}
 
+		[Authorize]
 		private void UpdateItemQty(string account, int productId, int newQty)
 		{
 			var cart = GetCartInfo(account);
@@ -140,6 +141,77 @@ namespace WZ.Estore.Controllers
 					// 更新數量
 					entity.Qty = newQty;
 				}
+				db.SaveChanges();
+			}
+		}
+
+		[Authorize]
+		public ActionResult Checkout() { 
+			string account = User.Identity.Name;
+			var cart = GetCartInfo(account);
+			if (!cart.AllowCheckout) { 
+				return Content("購物車是空的，無法結帳");// 回傳訊息
+			}
+			return View();
+		}
+
+		[Authorize]
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public ActionResult Checkout(CheckoutVM model)
+		{
+			string account = User.Identity.Name;
+
+			// 建立訂單主檔
+			CreateOrder(account, model);
+
+			// 清空購物車
+			EmptyCart(account);
+
+			return View("ConfirmCheckout"); // 顯示結帳成功畫面
+		}
+
+		private void EmptyCart(string account)
+		{
+			using (var db = new AppDbContext()) { 
+				var cart = db.Carts.FirstOrDefault(c => c.MemberAccount == account);
+				if (cart == null) return; // 購物車是空的
+				db.Carts.Remove(cart);
+				db.SaveChanges(); // 因為有設定外鍵關係(重疊顯示)，所以 EF 會自動刪除 CartItems
+			}
+		}
+
+		private void CreateOrder(string account, CheckoutVM model)
+		{
+			using (var db = new AppDbContext()) { 
+				var cart = GetCartInfo(account);
+				// 新增訂單主檔
+				var order = new Order
+				{
+					MemberId = db.Members.FirstOrDefault(m => m.Account == account).Id,
+					Receiver = model.Receiver,
+					Address = model.Address,
+					CellPhone = model.CellPhone,
+					Total = cart.Total,
+					CreatedTime = DateTime.Now,
+					Status = 1 // 新訂單
+				};// 這裡不必叫用 db.SaveChanges()，因為在 SaveChanges() 之前，EF 會自動將 order.Id 設定好
+
+				// 新增訂單明細
+				foreach (var item in cart.CartItems) { 
+					var orderItem = new OrderItem
+					{
+						Order = order, // 此用法是 EF 的 Navigation Property，可以與 Order 關聯不必知道 OrderId
+						ProductId = item.ProductId,
+						Qty = item.Qty,
+						Price = item.Product.Price,
+						ProductName = item.Product.Name,
+						SubTotal = item.SubTotal
+					};
+
+					db.OrderItems.Add(orderItem);
+				}
+				db.Orders.Add(order);
 				db.SaveChanges();
 			}
 		}
